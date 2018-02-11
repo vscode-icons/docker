@@ -1,0 +1,38 @@
+sudo: required
+language: generic
+services:
+  - docker
+jobs:
+  include:
+  - name: build on other branches or pull requests or forks
+    if: (branch != master AND NOT tag IS present) OR type = pull_request OR NOT repo =~ ^vscode-icons
+    script:
+      - travis_wait 60 docker build -q nodejs
+  - name: deploy nodejs:latest
+    if: repo =~ ^vscode-icons AND branch = master AND NOT tag IS present AND type = push
+    script:
+      - travis_wait 60 docker build -q -t $DOCKER_USERNAME/nodejs:latest nodejs
+    after_success:
+      - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker push $DOCKER_USERNAME/nodejs:latest
+  - name: deploy nodejs:tag
+    if: repo =~ ^vscode-icons AND tag IS present AND type = push
+    script:
+      - travis_wait 60 docker build -q -t $DOCKER_USERNAME/nodejs:$TRAVIS_TAG nodejs
+    after_success:
+      - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker push $DOCKER_USERNAME/nodejs:$TRAVIS_TAG
+  - name: deploy vsi:latest
+    if: repo =~ ^vscode-icons AND branch = master AND NOT env(TAG) IS present AND type = api
+    script:
+      - docker build -q -t $DOCKER_USERNAME/vsi:latest vsi
+    after_success:
+      - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker push $DOCKER_USERNAME/vsi:latest
+  - name: deploy vsi:tag
+    if: repo =~ ^vscode-icons AND env(TAG) IS present AND type = api
+    script:
+      - docker build -q -t $DOCKER_USERNAME/vsi:env(TAG) vsi
+    after_success:
+      - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker push $DOCKER_USERNAME/nodejs:env(TAG)
