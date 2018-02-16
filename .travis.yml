@@ -4,35 +4,34 @@ services:
   - docker
 jobs:
   include:
-  - name: build on other branches or pull requests or forks
-    if: (branch != master AND NOT tag IS present) OR type = pull_request OR NOT repo =~ ^vscode-icons
+  - name: build nodejs
+    if: (NOT repo =~ ^vscode-icons OR (branch != master AND NOT tag IS present) OR type = pull_request) AND NOT env(VSI_TAG) IS present
     script:
-      - travis_wait 60 docker build -q nodejs
-  - name: deploy nodejs:latest
-    if: repo =~ ^vscode-icons AND branch = master AND NOT tag IS present AND type = push
+      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t nodejs nodejs
+
+  - name: build and deploy nodejs:latest
+    if: repo =~ ^vscode-icons AND branch = master AND NOT tag IS present AND type != pull_request AND NOT env(VSI_TAG) IS present
     script:
-      - travis_wait 60 docker build -q -t $DOCKER_USERNAME/nodejs:latest nodejs
+      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_USERNAME/nodejs:latest nodejs
+      - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker push $DOCKER_USERNAME/nodejs:latest
-  - name: deploy nodejs:tag
-    if: repo =~ ^vscode-icons AND tag IS present AND type = push
+
+  - name: build and deploy nodejs:[tag]
+    if: repo =~ ^vscode-icons AND tag IS present AND type != pull_request AND NOT env(VSI_TAG) IS present
     script:
-      - travis_wait 60 docker build -q -t $DOCKER_USERNAME/nodejs:$TRAVIS_TAG nodejs
+      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_USERNAME/nodejs:$TRAVIS_TAG nodejs
+      - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker push $DOCKER_USERNAME/nodejs:$TRAVIS_TAG
-  - name: deploy vsi:latest
-    if: repo =~ ^vscode-icons AND branch = master AND NOT env(TAG) IS present AND type = api
+
+  - name: build and deploy vsi:[tag]
+    if: repo =~ ^vscode-icons AND env(VSI_TAG) =~ ^latest|[0-9.]+-*[a-zA-Z0-9]* AND type = api
     script:
-      - docker build -q -t $DOCKER_USERNAME/vsi:latest vsi
+      - docker build --rm -q -f vsi/Dockerfile -t $DOCKER_USERNAME/vsi:$VSI_TAG vsi
+      - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker push $DOCKER_USERNAME/vsi:latest
-  - name: deploy vsi:tag
-    if: repo =~ ^vscode-icons AND env(TAG) IS present AND type = api
-    script:
-      - docker build -q -t $DOCKER_USERNAME/vsi:env(TAG) vsi
-    after_success:
-      - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker push $DOCKER_USERNAME/nodejs:env(TAG)
+      - docker push $DOCKER_USERNAME/vsi:$VSI_TAG
