@@ -12,26 +12,26 @@ jobs:
   - name: build and deploy nodejs:latest
     if: repo =~ ^vscode-icons AND branch = master AND NOT tag IS present AND type != pull_request AND NOT env(VSI_TAG) IS present
     script:
-      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_USERNAME/nodejs:latest nodejs
+      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_REPONAME/nodejs:latest nodejs
       - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker push $DOCKER_USERNAME/nodejs:latest
+      - docker push $DOCKER_REPONAME/nodejs:latest
 
   - name: build and deploy nodejs:[tag]
     if: repo =~ ^vscode-icons AND tag IS present AND type != pull_request AND NOT env(VSI_TAG) IS present
     script:
-      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_USERNAME/nodejs:$TRAVIS_TAG nodejs
+      - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t $DOCKER_REPONAME/nodejs:$TRAVIS_TAG nodejs
       - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker push $DOCKER_USERNAME/nodejs:$TRAVIS_TAG
+      - docker push $DOCKER_REPONAME/nodejs:$TRAVIS_TAG
 
   - name: build and deploy vsi:[tag]
     if: repo =~ ^vscode-icons AND env(VSI_TAG) =~ ^latest|[0-9.]+-*[a-zA-Z0-9]* AND type = api
     script:
-      - docker build --rm -q -f vsi/Dockerfile -t $DOCKER_USERNAME/vsi:$VSI_TAG vsi
+      - docker build --rm -q -f vsi/Dockerfile -t $DOCKER_REPONAME/vsi:$VSI_TAG vsi
       - docker images
     after_success:
       - echo $DOCKER_PASSWORD | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker push $DOCKER_USERNAME/vsi:$VSI_TAG
+      - docker push $DOCKER_REPONAME/vsi:$VSI_TAG
