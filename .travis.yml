@@ -5,7 +5,7 @@ services:
 jobs:
   include:
   - name: build nodejs
-    if: (NOT repo =~ ^vscode-icons OR (branch != master AND NOT tag IS present) OR type = pull_request) AND NOT env(VSI_TAG) IS present
+    if: (NOT repo =~ ^vscode-icons OR branch != master OR type = pull_request) AND NOT env(VSI_TAG) IS present AND NOT tag IS present
     script:
       - travis_wait 60 docker build --rm -q -f nodejs/Dockerfile -t nodejs nodejs
 
