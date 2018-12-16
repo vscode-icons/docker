@@ -2,6 +2,8 @@ sudo: required
 language: generic
 services:
   - docker
+git:
+  depth: 5
 jobs:
   include:
   - name: build nodejs
