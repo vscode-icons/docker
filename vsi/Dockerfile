@@ -1,4 +1,4 @@
-FROM vscodeicons/nodejs:8.9.3
+FROM vscodeicons/nodejs:10.2.0
 ENV task ''
 RUN apk add --no-cache git libgit2-dev gcc g++
 RUN git clone https://github.com/vscode-icons/vscode-icons.git /vscode-icons
