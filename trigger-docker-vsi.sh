@@ -88,8 +88,11 @@ if jq -e . >/dev/null 2>&1 <<< $RESPONSE ; then
         echo "$TYPE::$ERROR_TYPE::$ERROR_MESSAGE"
         exit 1
         ;;
+    \"pending\")
+        echo "Request accepted"
+        exit
+        ;;
   esac
-  exit
 fi
 echo $RESPONSE
 exit 1
