@@ -77,7 +77,7 @@ RESPONSE=$(curl -s -X POST \
    -H "Travis-API-Version: 3" \
    -H "Authorization: token $TOKEN" \
    -d "$BODY" \
-   https://api.travis-ci.org/repo/$REPO_SLUG_URLENCODED/requests)
+   https://api.travis-ci.com/repo/$REPO_SLUG_URLENCODED/requests)
 echo ""
 if jq -e . >/dev/null 2>&1 <<< $RESPONSE ; then
   TYPE=$(jq '.["@type"]' <<< $RESPONSE)
