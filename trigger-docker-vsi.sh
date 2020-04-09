@@ -70,7 +70,7 @@ BODY='{
     }
   }
 }'
-echo $(jq ".request.message" <<< $BODY)
+echo $(jq -r ".request.message" <<< $BODY)
 RESPONSE=$(curl -s -X POST \
    -H "Content-Type: application/json" \
    -H "Accept: application/json" \
@@ -80,15 +80,15 @@ RESPONSE=$(curl -s -X POST \
    https://api.travis-ci.com/repo/$REPO_SLUG_URLENCODED/requests)
 echo ""
 if jq -e . >/dev/null 2>&1 <<< $RESPONSE ; then
-  TYPE=$(jq '.["@type"]' <<< $RESPONSE)
+  TYPE=$(jq -r '.["@type"]' <<< $RESPONSE)
   case $TYPE in
-    \"error\")
-        ERROR_TYPE=$(jq ".error_type" <<< $RESPONSE)
-        ERROR_MESSAGE=$(jq ".error_message" <<< $RESPONSE)
+    error)
+        ERROR_TYPE=$(jq -r ".error_type" <<< $RESPONSE)
+        ERROR_MESSAGE=$(jq -r ".error_message" <<< $RESPONSE)
         echo "$TYPE::$ERROR_TYPE::$ERROR_MESSAGE"
         exit 1
         ;;
-    \"pending\")
+    pending)
         echo "Request accepted"
         exit
         ;;
